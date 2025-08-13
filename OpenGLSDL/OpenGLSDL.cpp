@@ -31,12 +31,23 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
         return SDL_APP_SUCCESS;
     case SDL_EVENT_WINDOW_RESIZED:
         program.resizeWindow();
-        break;
+        break;        
     case SDL_EVENT_KEY_DOWN:
-        return program.handleKey(event->key.scancode);
+        switch (event->key.key) {
+        case SDLK_ESCAPE:
+            return SDL_APP_SUCCESS;
+        }
+        break;
+    case SDL_EVENT_MOUSE_MOTION:
+        program.handleMouse(event->motion.xrel, event->motion.yrel);
+        break;
+    case SDL_EVENT_MOUSE_WHEEL:
+        program.handleMouse(event->wheel.y);
+        break;
     default:
         break;
     }
+
     return SDL_APP_CONTINUE;
 }
 

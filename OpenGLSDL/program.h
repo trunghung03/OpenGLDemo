@@ -27,14 +27,29 @@ public:
     void loop();
     void quit();
     int resizeWindow();
-    SDL_AppResult handleKey(SDL_Scancode);
+    void handleKey();
+    void handleMouse(float, float);
+    void handleMouse(float);
+    uint64_t getDeltaTime();
 private:
     SDL_GLContext gl_context{};
     SDL_Window* window{};
     Shader shaderProgram{};
 
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 direction{};
+    float cameraSpeed = 0.003f;
+    float yaw = -90.0f;
+    float pitch = 0.0f;
+    float fov = 45.0f;
 
-    float mix;
+    const float sensitivity = 0.1f;
+
+
+    uint64_t deltaTime = 0;
+    uint64_t lastFrame = 0;
 };
 
 inline int Program::init() 
@@ -56,6 +71,10 @@ inline int Program::init()
 
     shaderProgram = Shader("shader.vert", "shader.frag");
 
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
     return 1;
 }
 
@@ -69,27 +88,75 @@ inline int Program::resizeWindow()
     return 1;
 }
 
-inline SDL_AppResult Program::handleKey(SDL_Scancode key_code) 
+uint64_t Program::getDeltaTime()
 {
-    switch (key_code) {
-    case SDL_SCANCODE_UP:
-        if (mix <= 1.0f) {
-            mix += 0.1f;
-        }
-        break;
-    case SDL_SCANCODE_DOWN:
-        if (mix > 0.1f) {
-            mix -= 0.1f;
-        }
-        break;
-    default:
-        break;
+    uint64_t currentFrame = SDL_GetTicks();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    return deltaTime;
+}
+
+inline void Program::handleKey() 
+{
+    auto deltaTime = getDeltaTime();
+    float speed = cameraSpeed * deltaTime;
+
+    const bool* keystates = SDL_GetKeyboardState(nullptr);
+
+
+    //SDL_assert(event->type == SDL_EVENT_KEY_DOWN); /* just checking key presses here... */
+    if (keystates[SDL_SCANCODE_W]) {
+        cameraPos += speed * cameraFront;
     }
-    return SDL_APP_CONTINUE;
+    if (keystates[SDL_SCANCODE_S]) {
+        cameraPos -= speed * cameraFront;
+    }
+    if (keystates[SDL_SCANCODE_A]) {
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+    }
+    if (keystates[SDL_SCANCODE_D]) {
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+    }    
+    cameraPos.y = 0;
+}
+
+inline void Program::handleMouse(float xrel, float yrel)
+{
+    float xoffset = xrel * sensitivity;
+    float yoffset = (-yrel) * sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+    //std::cout << yaw << " " << pitch << "\t";
+    //std::cout << xoffset << " " << yoffset << " " << xrel << " " << yrel << "\n";
+
+
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+}
+
+inline void Program::handleMouse(float y)
+{
+    fov -= y;
+    if (fov < 1.0f)
+        fov = 1.0f;
+    if (fov > 45.0f)
+        fov = 45.0f;
 }
 
 inline void Program::loop() 
 {
+    
+
+    // Handle player input
+    handleKey();
+
     // Background clear
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -225,16 +292,24 @@ inline void Program::loop()
 
     shaderProgram.use();
 
+    // Camera
+    
+    cameraFront = glm::normalize(direction);
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::rotate(model, (float)SDL_GetTicks() / 1000.0f * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    
     glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
 
     shaderProgram.setValue("model", model);
     shaderProgram.setValue("view", view);
     shaderProgram.setValue("projection", projection);
+
+
+    
 
     // Draw
 
@@ -295,6 +370,9 @@ static SDL_Window* SDLInit()
         printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
         return nullptr;
     }
+
+    // Cursor disable
+    SDL_SetWindowRelativeMouseMode(window, true);
 
     return window;
 }
