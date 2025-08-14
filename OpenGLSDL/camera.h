@@ -112,7 +112,7 @@ public:
 		}
 	}
 
-	void processMouse(float xoffset, float yoffset, bool pitchConstraint)
+	void processMouse(float xoffset, float yoffset, bool pitchConstraint = true)
 	{
 		xoffset *= Sensitivity;
 		yoffset *= Sensitivity;

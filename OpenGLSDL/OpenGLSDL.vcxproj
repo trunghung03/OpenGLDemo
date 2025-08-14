@@ -133,11 +133,14 @@
     <ClCompile Include="OpenGLSDL.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
     <ClInclude Include="program.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="lightshader.frag" />
+    <None Include="lightshader.vert" />
     <None Include="shader.frag" />
     <None Include="shader.vert" />
   </ItemGroup>
