@@ -225,10 +225,17 @@ inline void Program::loop()
     shaderProgram.setValue("view", view);
     shaderProgram.setValue("projection", projection);
 
-    shaderProgram.setValue("objectColor", 1.0f, 0.5f, 0.31f);
-    shaderProgram.setValue("lightColor", 1.0f, 1.0f, 1.0f);
-    shaderProgram.setValue("lightPos", lightPos);
     shaderProgram.setValue("viewPos", camera.Position);
+
+    shaderProgram.setValue("material.ambient", 1.0f, 0.5f, 0.31f);
+    shaderProgram.setValue("material.diffuse", 1.0f, 0.5f, 0.31f);
+    shaderProgram.setValue("material.specular", 0.5f, 0.5f, 0.5f);
+    shaderProgram.setValue("material.shininess", 32.0f);
+
+    shaderProgram.setValue("light.position", lightPos);
+    shaderProgram.setValue("light.ambient", 0.2f, 0.2f, 0.2f);
+    shaderProgram.setValue("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
+    shaderProgram.setValue("light.specular", 1.0f, 1.0f, 1.0f);
 
     // Draw
     glBindVertexArray(VAO);
