@@ -41,7 +41,6 @@ private:
 
     unsigned int diffuseMap;
     unsigned int specularMap;
-    unsigned int emissionMap;
 
     Camera camera;
 
@@ -109,26 +108,6 @@ inline void Program::initTexture()
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-    glGenTextures(1, &emissionMap);
-    glBindTexture(GL_TEXTURE_2D, emissionMap);
-    // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load and generate the texture
-    data = stbi_load("asset\\matrix.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -250,6 +229,19 @@ inline void Program::loop()
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
     };
 
+    glm::vec3 cubePositions[] = {
+        glm::vec3(0.0f,  0.0f,  0.0f),
+        glm::vec3(2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f,  2.0f, -2.5f),
+        glm::vec3(1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
     // Set VAO
@@ -312,13 +304,11 @@ inline void Program::loop()
     glBindTexture(GL_TEXTURE_2D, specularMap);
     shaderProgram.setValue("material.specular", 1);
 
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, emissionMap);
-    shaderProgram.setValue("material.emission", 2);
-
     shaderProgram.setValue("material.shininess", 32.0f);
 
     shaderProgram.setValue("light.position", lightPos);
+
+    shaderProgram.setValue("light.direction", -0.2f, -1.0f, -0.3f);
 
     glm::vec3 lightColor = glm::vec3(1.0f);
     glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
@@ -330,7 +320,17 @@ inline void Program::loop()
 
     // Draw
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    for (unsigned int i = 0; i < 10; i++)
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePositions[i]);
+        float angle = 20.0f * i;
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        shaderProgram.setValue("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     // don't forget to use the corresponding shader program first (to set the uniform)
     shaderLight.use();
