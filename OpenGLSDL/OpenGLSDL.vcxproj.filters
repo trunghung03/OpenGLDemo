@@ -57,5 +57,11 @@
     <Image Include="asset\container.jpg">
       <Filter>Asset Files</Filter>
     </Image>
+    <Image Include="asset\container2.png">
+      <Filter>Asset Files</Filter>
+    </Image>
+    <Image Include="asset\container2_specular.png">
+      <Filter>Asset Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
