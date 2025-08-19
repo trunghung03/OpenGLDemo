@@ -14,6 +14,7 @@
 
 #include "shader.h"
 #include "camera.h"
+#include "model.h"
 
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 600;
@@ -46,6 +47,8 @@ private:
 
     uint64_t deltaTime = 0;
     uint64_t lastFrame = 0;
+
+    Model model;
 };
 
 inline int Program::init() 
@@ -69,6 +72,8 @@ inline int Program::init()
     shaderLight = Shader("lightshader.vert", "lightshader.frag");
 
     initTexture();
+
+    model = Model("asset\\backpack\\backpack.obj");
 
     return 1;
 }
@@ -242,6 +247,14 @@ inline void Program::loop()
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
+
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3(0.7f,  0.2f,  2.0f),
+        glm::vec3(2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3(0.0f,  0.0f, -3.0f)
+    };
+
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
     // Set VAO
@@ -282,7 +295,7 @@ inline void Program::loop()
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
 
-    
+    model.Draw(shaderProgram);
 
 
     shaderProgram.use();
@@ -306,17 +319,62 @@ inline void Program::loop()
 
     shaderProgram.setValue("material.shininess", 32.0f);
 
-    shaderProgram.setValue("light.position", lightPos);
+    //shaderProgram.setValue("light.position", lightPos);
 
-    shaderProgram.setValue("light.direction", -0.2f, -1.0f, -0.3f);
+    //shaderProgram.setValue("light.direction", -0.2f, -1.0f, -0.3f);
 
     glm::vec3 lightColor = glm::vec3(1.0f);
     glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
     glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
 
-    shaderProgram.setValue("light.ambient", ambientColor);
-    shaderProgram.setValue("light.diffuse", diffuseColor);
-    shaderProgram.setValue("light.specular", glm::vec3(1.0f));
+    // directional light
+    shaderProgram.setValue("dirLight.direction", -0.2f, -1.0f, -0.3f);
+    shaderProgram.setValue("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+    shaderProgram.setValue("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+    shaderProgram.setValue("dirLight.specular", 0.5f, 0.5f, 0.5f);
+    // point light 1
+    shaderProgram.setValue("pointLights[0].position", pointLightPositions[0]);
+    shaderProgram.setValue("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+    shaderProgram.setValue("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+    shaderProgram.setValue("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+    shaderProgram.setValue("pointLights[0].constant", 1.0f);
+    shaderProgram.setValue("pointLights[0].linear", 0.09f);
+    shaderProgram.setValue("pointLights[0].quadratic", 0.032f);
+    // point light 2
+    shaderProgram.setValue("pointLights[1].position", pointLightPositions[1]);
+    shaderProgram.setValue("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+    shaderProgram.setValue("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+    shaderProgram.setValue("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+    shaderProgram.setValue("pointLights[1].constant", 1.0f);
+    shaderProgram.setValue("pointLights[1].linear", 0.09f);
+    shaderProgram.setValue("pointLights[1].quadratic", 0.032f);
+    // point light 3
+    shaderProgram.setValue("pointLights[2].position", pointLightPositions[2]);
+    shaderProgram.setValue("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+    shaderProgram.setValue("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+    shaderProgram.setValue("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+    shaderProgram.setValue("pointLights[2].constant", 1.0f);
+    shaderProgram.setValue("pointLights[2].linear", 0.09f);
+    shaderProgram.setValue("pointLights[2].quadratic", 0.032f);
+    // point light 4
+    shaderProgram.setValue("pointLights[3].position", pointLightPositions[3]);
+    shaderProgram.setValue("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+    shaderProgram.setValue("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+    shaderProgram.setValue("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+    shaderProgram.setValue("pointLights[3].constant", 1.0f);
+    shaderProgram.setValue("pointLights[3].linear", 0.09f);
+    shaderProgram.setValue("pointLights[3].quadratic", 0.032f);
+    // spotLight
+    shaderProgram.setValue("spotLight.position", camera.Position);
+    shaderProgram.setValue("spotLight.direction", camera.Front);
+    shaderProgram.setValue("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+    shaderProgram.setValue("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+    shaderProgram.setValue("spotLight.specular", 1.0f, 1.0f, 1.0f);
+    shaderProgram.setValue("spotLight.constant", 1.0f);
+    shaderProgram.setValue("spotLight.linear", 0.09f);
+    shaderProgram.setValue("spotLight.quadratic", 0.032f);
+    shaderProgram.setValue("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+    shaderProgram.setValue("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
     // Draw
     glBindVertexArray(VAO);
@@ -335,18 +393,25 @@ inline void Program::loop()
     // don't forget to use the corresponding shader program first (to set the uniform)
     shaderLight.use();
 
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, lightPos);
-    model = glm::scale(model, glm::vec3(0.2f));
+    
+    //model = glm::translate(model, lightPos);
+    
 
     shaderLight.setValue("model", model);
     shaderLight.setValue("view", view);
     shaderLight.setValue("projection", projection);
-
     shaderLight.setValue("lightColor", lightColor);
 
     glBindVertexArray(lightVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    for (unsigned int i = 0; i < 4; i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, pointLightPositions[i]);
+        model = glm::scale(model, glm::vec3(0.2f));
+        shaderLight.setValue("model", model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     SDL_GL_SwapWindow(window);
 }
