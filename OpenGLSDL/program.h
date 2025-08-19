@@ -295,15 +295,18 @@ inline void Program::loop()
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(camera.Zoom), 800.0f / 600.0f, 0.1f, 100.0f);
 
-    model.Draw(shaderProgram);
 
 
     shaderProgram.use();
 
+
     glm::mat4 model = glm::mat4(1.0f);
-    //model = glm::rotate(model, (float)SDL_GetTicks() / 1000.0f * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-    
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
     shaderProgram.setValue("model", model);
+
+    this->model.Draw(shaderProgram);
+
+    
     shaderProgram.setValue("view", view);
     shaderProgram.setValue("projection", projection);
 
