@@ -27,6 +27,7 @@ public:
     void setValue(const std::string& name, float value) const;
     void setValue(const std::string& name, glm::mat4 value) const;
     void setValue(const std::string& name, glm::vec3 vec3) const;
+    void setValue(const std::string& name, glm::vec2 vec2) const;
     void setValue(const std::string& name, float v1, float v2, float v3) const;
 
 };
@@ -138,6 +139,13 @@ void Shader::setValue(const std::string& name, glm::vec3 vec3) const
     float vector3[3] = { vec3.x, vec3.y, vec3.z };
 
     glUniform3fv(glGetUniformLocation(this->ID, name.c_str()), 1, vector3);
+}
+
+void Shader::setValue(const std::string& name, glm::vec2 vec2) const
+{
+    float vector2[2] = { vec2.x, vec2.y };
+
+    glUniform2fv(glGetUniformLocation(this->ID, name.c_str()), 1, vector2);
 }
 
 void Shader::setValue(const std::string& name, float v1, float v2, float v3) const
