@@ -58,6 +58,12 @@
     <None Include="lightshader.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="instanceShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="instanceShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="asset\container.jpg">

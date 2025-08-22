@@ -23,12 +23,12 @@ public:
 		loadModel(path);
 	}
 	void Draw(Shader& shader);
+	std::vector<Mesh> meshes;
+	std::vector<Texture> textures_loaded;
 
 private:
 	// model data
-	std::vector<Mesh> meshes;
 	std::string directory;
-	std::vector<Texture> textures_loaded;
 
 	void loadModel(std::string path);
 	void processNode(aiNode* node, const aiScene* scene);
@@ -125,6 +125,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
 	std::vector<Texture> textures;
+	std::cout << mat->GetTextureCount(type) << "\n";
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
@@ -153,7 +154,8 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 unsigned int TextureFromFile(const char* filePath, const std::string& directory)
 {
 	std::string filename = std::string(filePath);
-	filename = directory + '/' + filename;
+	filename = directory + '\\' + filename;
+	std::cout << filename << "\n";
 
 	int width, height, nrChannels;
 	unsigned int textureID;

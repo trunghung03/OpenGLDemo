@@ -141,6 +141,8 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="instanceShader.frag" />
+    <None Include="instanceShader.vert" />
     <None Include="lightshader.frag" />
     <None Include="lightshader.vert" />
     <None Include="shader.frag" />
