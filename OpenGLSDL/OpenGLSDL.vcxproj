@@ -141,6 +141,7 @@
     <ClInclude Include="program.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="shape.h" />
+    <ClInclude Include="skybox.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="world.h" />
   </ItemGroup>
@@ -153,6 +154,8 @@
     <None Include="shader.vert" />
     <None Include="shapeShader.frag" />
     <None Include="shapeShader.vert" />
+    <None Include="skyboxShader.frag" />
+    <None Include="skyboxShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="asset\container.jpg" />

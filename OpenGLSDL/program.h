@@ -17,6 +17,7 @@
 #include "model.h"
 #include "world.h"
 #include "shape.h"
+#include "skybox.h"
 
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 600;
@@ -40,12 +41,14 @@ private:
     SDL_Window* window{};
     Shader shaderProgram{};
     Shader shaderLight{};
+    Shader skyboxShader{};
 
     Camera camera;
 
     uint64_t deltaTime = 0;
     uint64_t lastFrame = 0;
 
+    Skybox skybox;
     World world;
 };
 
@@ -67,6 +70,7 @@ inline int Program::init()
     }
 
     shaderProgram = Shader("shapeShader.vert", "shapeShader.frag");
+    skyboxShader = Shader("skyboxShader.vert", "skyboxShader.frag");
 
     auto plane = std::make_unique<Shape>();
     glm::mat4 planeLocation = glm::mat4(1.0f);
@@ -74,6 +78,9 @@ inline int Program::init()
 
     plane->generatePlane(500, 500, 0.5f);
     world.addObject(std::move(plane), planeLocation);
+
+    skybox = Skybox();
+    skybox.generateSkybox();
 
     return 1;
 }
@@ -148,20 +155,27 @@ inline void Program::loop()
     handleKey();
 
     // Background clear
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(0.9f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shaderProgram.use();
 
     glm::mat4 view = camera.getViewMatrix();
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(camera.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 
+    skyboxShader.use();
+    glm::mat4 skyboxView = glm::mat4(glm::mat3(camera.getViewMatrix()));
+    skyboxShader.setValue("view", skyboxView);
+    skyboxShader.setValue("projection", projection);
+
+    skybox.Draw(skyboxShader);
+
+
+    shaderProgram.use();
     lightHelper(shaderProgram, camera);
 
     shaderProgram.setValue("view", view);
     shaderProgram.setValue("projection", projection);
-
 
     // draw planet
     world.Draw(shaderProgram);

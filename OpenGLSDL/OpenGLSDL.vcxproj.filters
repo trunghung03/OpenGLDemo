@@ -56,6 +56,9 @@
     <ClInclude Include="FastNoiseLite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag">
@@ -80,6 +83,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="shapeShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="skyboxShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="skyboxShader.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
