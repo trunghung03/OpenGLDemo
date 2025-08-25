@@ -134,11 +134,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="FastNoiseLite.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="model.h" />
+    <ClInclude Include="object.h" />
     <ClInclude Include="program.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="shape.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="world.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="instanceShader.frag" />
@@ -147,6 +151,8 @@
     <None Include="lightshader.vert" />
     <None Include="shader.frag" />
     <None Include="shader.vert" />
+    <None Include="shapeShader.frag" />
+    <None Include="shapeShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="asset\container.jpg" />

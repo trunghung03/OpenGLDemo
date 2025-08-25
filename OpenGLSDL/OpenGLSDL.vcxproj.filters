@@ -44,6 +44,18 @@
     <ClInclude Include="model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="world.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FastNoiseLite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag">
@@ -62,6 +74,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="instanceShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shapeShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shapeShader.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

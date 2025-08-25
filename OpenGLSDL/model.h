@@ -12,17 +12,18 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "mesh.h"
+#include "object.h"
 
 unsigned int TextureFromFile(const char* filePath, const std::string& directory);
 
-class Model {
+class Model : public Object {
 public:
 	Model() {};
 	Model(const char* path)
 	{
 		loadModel(path);
 	}
-	void Draw(Shader& shader);
+	void Draw(Shader& shader) override;
 	std::vector<Mesh> meshes;
 	std::vector<Texture> textures_loaded;
 
