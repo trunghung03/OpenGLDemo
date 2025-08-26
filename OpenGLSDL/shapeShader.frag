@@ -6,6 +6,6 @@ out vec4 FragColor;
 
 void main()
 {
-    float noise = (FragPos.y - 0.5) / 5.0;
+    float noise = (FragPos.y) / 7.5;
     FragColor = vec4(0.0, noise, 1.0 - noise, 1.0);
 }

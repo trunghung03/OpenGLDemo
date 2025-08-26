@@ -72,12 +72,12 @@ inline int Program::init()
     shaderProgram = Shader("shapeShader.vert", "shapeShader.frag");
     skyboxShader = Shader("skyboxShader.vert", "skyboxShader.frag");
 
-    auto plane = std::make_unique<Shape>();
-    glm::mat4 planeLocation = glm::mat4(1.0f);
-    planeLocation = glm::translate(planeLocation, glm::vec3(-250.0f, -2.0f, -250.0f));
+    //auto plane = std::make_unique<Shape>();
+    //glm::mat4 planeLocation = glm::mat4(1.0f);
+    //planeLocation = glm::translate(planeLocation, glm::vec3(-250.0f, -2.0f, -250.0f));
 
-    plane->generatePlane(500, 500, 0.5f);
-    world.addObject(std::move(plane), planeLocation);
+    //plane->generatePlane(100, 100, 0.1f);
+    //world.addObject(std::move(plane), planeLocation);
 
     skybox = Skybox();
     skybox.generateSkybox();
@@ -172,7 +172,6 @@ inline void Program::loop()
 
 
     shaderProgram.use();
-    lightHelper(shaderProgram, camera);
 
     shaderProgram.setValue("view", view);
     shaderProgram.setValue("projection", projection);

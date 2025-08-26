@@ -29,13 +29,32 @@ inline void Shape::generatePlane(int width, int height, float resolution)
     vertices.reserve(vertsPerRow * vertsPerCol * 3);
 
     FastNoiseLite noise;
-    noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    noise.SetFrequency(0.03f);
-    noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
-    noise.SetFractalOctaves(2);
-    noise.SetDomainWarpType(FastNoiseLite::DomainWarpType_OpenSimplex2);
-    noise.SetDomainWarpAmp(113.5f);
 
+    noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    noise.SetFrequency(1.0f);
+    noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+    noise.SetFractalLacunarity(1.0f);
+    noise.SetFractalGain(0.5f);
+
+    noise.SetNoiseType(FastNoiseLite::NoiseType_Value);
+
+    // 2. Set up Fractal (FBM) parameters
+    noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+    noise.SetFractalOctaves(9);         // Matching 'terrainM' loop count
+    noise.SetFractalLacunarity(2.0f);   // Matching p*2.0
+    noise.SetFractalGain(0.5f);         // Matching b*=0.5
+
+    // 4. Set up Domain Warping to approximate the custom distortion
+    // This is the closest feature to the `/(1.0+dot(d,d))` logic.
+    // It uses a second noise source to warp the input coordinates of the main noise.
+    noise.SetDomainWarpType(FastNoiseLite::DomainWarpType_OpenSimplex2);
+
+    // Adjust the amplitude of the warp. You will need to experiment with this
+    // value to get the desired visual result.
+    noise.SetDomainWarpAmp(30.0f);
+
+
+    float scaling = 0.12f;
 
     for (int j = 0; j < vertsPerCol; ++j) {
         for (int i = 0; i < vertsPerRow; ++i) {
@@ -44,12 +63,13 @@ inline void Shape::generatePlane(int width, int height, float resolution)
             float z = j * resolution;
 
             // Get the noise value for this position to determine the height (y).
-            float y = (noise.GetNoise(x, z) + 0.5f) * 5;
+            float y = (noise.GetNoise(z * scaling, x * scaling) + 0.5f) * 7.5f;
 
             vertices.push_back(x);
             vertices.push_back(y); // Apply a multiplier to the height.
             vertices.push_back(z);
         }
+        std::cout << "Generation: " << j << "/" << vertsPerCol << "\r";
     }
 
     std::vector<unsigned int> indices;
