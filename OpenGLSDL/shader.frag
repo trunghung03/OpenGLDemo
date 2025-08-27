@@ -3,6 +3,8 @@
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
+    vec3 color_diffuse;
+    vec3 color_specular;
     float     shininess;
 };
   
@@ -55,6 +57,7 @@ in vec3 FragPos;
 in vec2 TexCoords;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcDirLightSolid(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
@@ -65,10 +68,25 @@ void main()
     vec3 viewDir = normalize(viewPos - FragPos);
 
     // phase 1: Directional lighting
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);
+    vec3 result = CalcDirLightSolid(dirLight, norm, viewDir);
     
     FragColor = vec4(result, 1.0);
 }
+
+vec3 CalcDirLightSolid(DirLight light, vec3 normal, vec3 viewDir)
+{
+    vec3 lightDir = normalize(-light.direction);
+    // diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // specular shading
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // combine results
+    vec3 ambient  = light.ambient  * material.color_diffuse;
+    vec3 diffuse  = light.diffuse  * diff * material.color_diffuse;
+    vec3 specular = light.specular * spec * material.color_specular;
+    return (ambient + diffuse + specular);
+}  
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {

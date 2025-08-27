@@ -69,15 +69,20 @@ inline int Program::init()
         return 0;
     }
 
-    shaderProgram = Shader("shapeShader.vert", "shapeShader.frag");
+    shaderProgram = Shader("shader.vert", "shader.frag");
     skyboxShader = Shader("skyboxShader.vert", "skyboxShader.frag");
 
-    //auto plane = std::make_unique<Shape>();
-    //glm::mat4 planeLocation = glm::mat4(1.0f);
+    auto plane = std::make_unique<Shape>();
+    glm::mat4 planeLocation = glm::mat4(1.0f);
     //planeLocation = glm::translate(planeLocation, glm::vec3(-250.0f, -2.0f, -250.0f));
 
-    //plane->generatePlane(100, 100, 0.1f);
-    //world.addObject(std::move(plane), planeLocation);
+    plane->generatePlane(100, 100, 0.1f);
+    world.addObject(std::move(plane), planeLocation);
+
+    auto tree = std::make_unique<Model>("asset\\tree\\tree_oak.obj");
+    glm::mat4 treeLocation = glm::mat4(1.0f);
+    treeLocation = glm::scale(treeLocation, glm::vec3(50.0f, 50.0f, 50.0f));
+    world.addObject(std::move(tree), treeLocation);
 
     skybox = Skybox();
     skybox.generateSkybox();
@@ -140,7 +145,7 @@ inline void Program::handleMouse(float y)
     camera.processMouseScroll(y);
 }
 
-void lightHelper(Shader& shaderProgram, Camera& camera)
+void lightHelper(Shader& shaderProgram)
 {
     // directional light
     shaderProgram.setValue("dirLight.direction", -0.2f, -1.0f, -0.3f);
@@ -175,6 +180,8 @@ inline void Program::loop()
 
     shaderProgram.setValue("view", view);
     shaderProgram.setValue("projection", projection);
+
+    lightHelper(shaderProgram);
 
     // draw planet
     world.Draw(shaderProgram);

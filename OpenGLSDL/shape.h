@@ -14,20 +14,8 @@ public:
     void Draw(Shader& shader) override;
 };
 
-inline void Shape::generatePlane(int width, int height, float resolution)
+FastNoiseLite noiseGen()
 {
-    std::vector<float> vertices;
-    if (resolution <= 0.0f) {
-        resolution = 1.0f;
-    }
-
-    // Calculate the number of vertices needed along each axis.
-    // We use integer math for robustness. Add 1 because a line of N segments has N+1 points.
-    const int vertsPerRow = static_cast<int>(width / resolution) + 1;
-    const int vertsPerCol = static_cast<int>(height / resolution) + 1;
-
-    vertices.reserve(vertsPerRow * vertsPerCol * 3);
-
     FastNoiseLite noise;
 
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
@@ -53,6 +41,26 @@ inline void Shape::generatePlane(int width, int height, float resolution)
     // value to get the desired visual result.
     noise.SetDomainWarpAmp(30.0f);
 
+    return noise;
+}
+
+inline void Shape::generatePlane(int width, int height, float resolution)
+{
+    std::vector<float> vertices;
+    if (resolution <= 0.0f) {
+        resolution = 1.0f;
+    }
+
+    // Calculate the number of vertices needed along each axis.
+    // We use integer math for robustness. Add 1 because a line of N segments has N+1 points.
+    const int vertsPerRow = static_cast<int>(width / resolution) + 1;
+    const int vertsPerCol = static_cast<int>(height / resolution) + 1;
+
+    
+
+    vertices.reserve(vertsPerRow * vertsPerCol * 3);
+
+    FastNoiseLite noise = noiseGen();
 
     float scaling = 0.12f;
 
@@ -69,8 +77,10 @@ inline void Shape::generatePlane(int width, int height, float resolution)
             vertices.push_back(y); // Apply a multiplier to the height.
             vertices.push_back(z);
         }
-        std::cout << "Generation: " << j << "/" << vertsPerCol << "\r";
+        //std::cout << "Generation: " << j << "/" << vertsPerCol << "\r";
     }
+
+    const int size = vertices.size();
 
     std::vector<unsigned int> indices;
     // --- Index Generation ---
@@ -97,7 +107,34 @@ inline void Shape::generatePlane(int width, int height, float resolution)
             indices.push_back(topRight);
             indices.push_back(bottomLeft);
             indices.push_back(bottomRight);
+
+            
         }
+    }
+
+    std::vector<glm::vec3> normals(vertsPerRow * vertsPerCol, glm::vec3(0.0f, 0.0f, 0.0f));
+
+    for (int i = 0; i < indices.size(); i += 3) {
+        int i1 = indices[i];
+        int i2 = indices[i + 1];
+        int i3 = indices[i + 2];
+
+        glm::vec3 v1{ vertices[i1 * 3], vertices[i1 * 3 + 1], vertices[i1 * 3 + 2] };
+        glm::vec3 v2{ vertices[i2 * 3], vertices[i2 * 3 + 1], vertices[i2 * 3 + 2] };
+        glm::vec3 v3{ vertices[i3 * 3], vertices[i3 * 3 + 1], vertices[i3 * 3 + 2] };
+
+        glm::vec3 normal = glm::cross(v2 - v1, v3 - v1);
+        
+        normals[i1] += normal;
+        normals[i2] += normal;
+        normals[i3] += normal;
+    }
+
+    for (int i = 0; i < normals.size(); i++) {
+        normals[i] = glm::normalize(normals[i]);
+        vertices.push_back(normals[i].x);
+        vertices.push_back(normals[i].y);
+        vertices.push_back(normals[i].z);
     }
 
     unsigned int VBO, VAO, EBO;
@@ -113,8 +150,11 @@ inline void Shape::generatePlane(int width, int height, float resolution)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) (sizeof(float) * size));
+    glEnableVertexAttribArray(1);
 
     this->VAO = VAO;
     this->size = static_cast<unsigned int>(indices.size()); // ADD THIS LINE
@@ -122,6 +162,8 @@ inline void Shape::generatePlane(int width, int height, float resolution)
 
 inline void Shape::Draw(Shader& shader)
 {
+    glm::vec3 color = { 1.0f, 1.0f, 1.0f };
+    shader.setValue("material.color_diffuse", color);
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
 }

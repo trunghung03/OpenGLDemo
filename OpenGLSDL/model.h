@@ -111,6 +111,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		}
 	}
 
+	Color colors_loaded;
+
 	// process material
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -118,15 +120,28 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+		aiColor3D color(0.f, 0.f, 0.f);
+		if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+			colors_loaded.id = mesh->mMaterialIndex;
+			colors_loaded.type = "color_diffuse";
+			colors_loaded.color = color;
+		}
+
+		//if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) {
+		//	colors_loaded.id = mesh->mMaterialIndex;
+		//	colors_loaded.type = "color_specular";
+		//	colors_loaded.color = color;
+		//}
 	}
 
-	return Mesh(vertices, indices, textures);
+	return Mesh(vertices, indices, textures, colors_loaded);
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
 	std::vector<Texture> textures;
-	std::cout << mat->GetTextureCount(type) << "\n";
+	//std::cout << mat->GetTextureCount(type) << "\n";
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);

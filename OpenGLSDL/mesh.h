@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include <assimp/scene.h>
 #include "shader.h"
 
 struct Vertex {
@@ -21,14 +22,22 @@ struct Texture {
 	std::string path;
 };
 
+struct Color {
+	unsigned int id{};
+	std::string type;
+	aiColor3D color;
+};
+
 class Mesh {
 public:
 	// Mesh data
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
+	Color color;
 
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, Color);
 	void Draw(Shader& shader);
 	unsigned int VAO, VBO, EBO;
 private:
@@ -41,6 +50,16 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
+
+	setupMesh();
+}
+
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, Color color)
+{
+	this->vertices = vertices;
+	this->indices = indices;
+	this->textures = textures;
+	this->color = color;
 
 	setupMesh();
 }
@@ -94,6 +113,13 @@ void Mesh::Draw(Shader& shader)
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 	glActiveTexture(GL_TEXTURE0);
+
+	if (!color.type.empty()) {
+		std::string name = color.type; // TODO: Generalize this
+		glm::vec3 color = { this->color.color.r, this->color.color.g, this->color.color.b };
+
+		shader.setValue(("material." + name).c_str(), color);
+	}
 
 	// Draw mesh
 	glBindVertexArray(VAO);
