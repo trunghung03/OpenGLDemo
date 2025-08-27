@@ -18,12 +18,14 @@
 #include "world.h"
 #include "shape.h"
 #include "skybox.h"
+#include <random>
 
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 600;
 
 SDL_Window* SDLInit();
 SDL_GLContext OpenGLInit(SDL_Window* window);
+int randomHelper(int min, int max);
 
 class Program 
 {
@@ -50,6 +52,9 @@ private:
 
     Skybox skybox;
     World world;
+    Model tree;
+
+    std::vector<glm::mat4> treeLocations;
 };
 
 inline int Program::init()
@@ -76,16 +81,25 @@ inline int Program::init()
     glm::mat4 planeLocation = glm::mat4(1.0f);
     //planeLocation = glm::translate(planeLocation, glm::vec3(-250.0f, -2.0f, -250.0f));
 
-    plane->generatePlane(100, 100, 0.1f);
-    world.addObject(std::move(plane), planeLocation);
 
-    auto tree = std::make_unique<Model>("asset\\tree\\tree_oak.obj");
-    glm::mat4 treeLocation = glm::mat4(1.0f);
-    treeLocation = glm::scale(treeLocation, glm::vec3(50.0f, 50.0f, 50.0f));
-    world.addObject(std::move(tree), treeLocation);
+    int planeWidth = 100;
+    int planeHeight = 100;
+    plane->generatePlane(100, 100, 0.1f);
+
+    tree = Model("asset\\tree\\tree_oak.obj");
+
+    
+    for (int i = 0; i < 100; i++) {
+        glm::mat4 treeLocation = glm::mat4(1.0f);
+        glm::vec3 randPoint = plane->randomPoint();
+        treeLocation = glm::translate(treeLocation, randPoint);
+        treeLocations.push_back(treeLocation);
+    }
 
     skybox = Skybox();
     skybox.generateSkybox();
+    world.addObject(std::move(plane), planeLocation);
+    
 
     return 1;
 }
@@ -183,8 +197,13 @@ inline void Program::loop()
 
     lightHelper(shaderProgram);
 
-    // draw planet
+    // draw main
     world.Draw(shaderProgram);
+
+    for (auto&& treeLoc : treeLocations) {
+        shaderProgram.setValue("model", treeLoc);
+        tree.Draw(shaderProgram);
+    }
     
     SDL_GL_SwapWindow(window);
 }

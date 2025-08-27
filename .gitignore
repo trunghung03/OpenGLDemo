@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+OpenGLSDL/assimp-vc143-mtd.dll
+OpenGLSDL/OpenGLSDL.exe
+OpenGLSDL/SDL3.dll

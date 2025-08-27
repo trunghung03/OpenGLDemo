@@ -4,12 +4,18 @@
 #include "object.h"
 #include "FastNoiseLite.h"
 
+#include <random>
+
 class Shape : public Object {
 public:
     
     unsigned int VAO{};
     unsigned int size{};
 
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    glm::vec3 randomPoint();
 	void generatePlane(int, int, float);
     void Draw(Shader& shader) override;
 };
@@ -44,9 +50,20 @@ FastNoiseLite noiseGen()
     return noise;
 }
 
+inline glm::vec3 Shape::randomPoint()
+{
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, (int) indices.size()); // distribution in range [1, 6]
+
+    glm::vec3 result = { vertices[dist(rng)], vertices[dist(rng) + 1],vertices[dist(rng) + 2] };
+
+    return result;
+}
+
 inline void Shape::generatePlane(int width, int height, float resolution)
 {
-    std::vector<float> vertices;
+    
     if (resolution <= 0.0f) {
         resolution = 1.0f;
     }
@@ -82,7 +99,6 @@ inline void Shape::generatePlane(int width, int height, float resolution)
 
     const int size = vertices.size();
 
-    std::vector<unsigned int> indices;
     // --- Index Generation ---
     // A grid of WxH quads has (W*H*6) indices.
     const int numQuadsX = vertsPerRow - 1;
