@@ -24,6 +24,7 @@ public:
 		loadModel(path);
 	}
 	void Draw(Shader& shader) override;
+	
 	std::vector<Mesh> meshes;
 	std::vector<Texture> textures_loaded;
 
@@ -39,6 +40,11 @@ private:
 
 void Model::Draw(Shader& shader)
 {
+	if (this->locations.size() > 0) {
+		for (unsigned int i = 0; i < meshes.size(); i++) {
+			meshes[i].Draw(shader, locations.size());
+		}
+	}
 	for (unsigned int i = 0; i < meshes.size(); i++) {
 		meshes[i].Draw(shader);
 	}

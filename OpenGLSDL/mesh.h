@@ -38,7 +38,9 @@ public:
 
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, Color);
+	void prepareMaterial(Shader& shader);
 	void Draw(Shader& shader);
+	void Draw(Shader& shader, int);
 	glm::vec3 getColor();
 	unsigned int VAO, VBO, EBO;
 private:
@@ -97,7 +99,7 @@ inline glm::vec3 Mesh::getColor()
 	return { this->color.color.r, this->color.color.g, this->color.color.b };
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::prepareMaterial(Shader& shader)
 {
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
@@ -115,7 +117,7 @@ void Mesh::Draw(Shader& shader)
 		}
 
 		//std::cout << ("material." + name + number).c_str() << "\n";
-		shader.setValue(("material." + name + number).c_str(), (int) i);
+		shader.setValue(("material." + name + number).c_str(), (int)i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 	glActiveTexture(GL_TEXTURE0);
@@ -126,9 +128,24 @@ void Mesh::Draw(Shader& shader)
 
 		shader.setValue(("material." + name).c_str(), color);
 	}
+}
+
+void Mesh::Draw(Shader& shader)
+{
+	prepareMaterial(shader);
 
 	// Draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
+void Mesh::Draw(Shader& shader, int instanceNo)
+{
+	prepareMaterial(shader);
+
+	// Draw mesh
+	glBindVertexArray(VAO);
+	glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0, instanceNo);
 	glBindVertexArray(0);
 }

@@ -8,6 +8,8 @@
 class Object {
 public:
 	glm::mat4 location{};
+	std::vector<glm::mat4> locations{};
+	int instanceNo;
 
 	virtual void Draw(Shader&) = 0;
 };
