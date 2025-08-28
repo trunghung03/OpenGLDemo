@@ -15,6 +15,9 @@ public:
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
 
+    std::mt19937 rng;
+
+    Shape() : rng(std::random_device{}()) {}
     glm::vec3 randomPoint();
 	void generatePlane(int, int, float);
     void Draw(Shader& shader) override;
@@ -52,11 +55,12 @@ FastNoiseLite noiseGen()
 
 inline glm::vec3 Shape::randomPoint()
 {
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(0, (int) indices.size()); // distribution in range [1, 6]
+    const size_t numVertices = (size_t) indices.back() + 1;
+    std::uniform_int_distribution<size_t> dist(0, numVertices - 1);
 
-    glm::vec3 result = { vertices[dist(rng)], vertices[dist(rng) + 1],vertices[dist(rng) + 2] };
+    unsigned int index = (unsigned int) dist(rng) * 3;
+
+    glm::vec3 result = { vertices[index], vertices[index + 1], vertices[index + 2] };
 
     return result;
 }
@@ -91,13 +95,13 @@ inline void Shape::generatePlane(int width, int height, float resolution)
             float y = (noise.GetNoise(z * scaling, x * scaling) + 0.5f) * 7.5f;
 
             vertices.push_back(x);
-            vertices.push_back(y); // Apply a multiplier to the height.
+            vertices.push_back(y);
             vertices.push_back(z);
         }
         //std::cout << "Generation: " << j << "/" << vertsPerCol << "\r";
     }
 
-    const int size = vertices.size();
+    unsigned int size = (unsigned int) vertices.size();
 
     // --- Index Generation ---
     // A grid of WxH quads has (W*H*6) indices.
@@ -173,7 +177,7 @@ inline void Shape::generatePlane(int width, int height, float resolution)
     glEnableVertexAttribArray(1);
 
     this->VAO = VAO;
-    this->size = static_cast<unsigned int>(indices.size()); // ADD THIS LINE
+    this->size = static_cast<unsigned int>(indices.size());
 }
 
 inline void Shape::Draw(Shader& shader)

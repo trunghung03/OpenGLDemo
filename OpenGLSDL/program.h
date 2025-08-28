@@ -44,6 +44,7 @@ private:
     Shader shaderProgram{};
     Shader shaderLight{};
     Shader skyboxShader{};
+    Shader instanceShader{};
 
     Camera camera;
 
@@ -76,6 +77,7 @@ inline int Program::init()
 
     shaderProgram = Shader("shader.vert", "shader.frag");
     skyboxShader = Shader("skyboxShader.vert", "skyboxShader.frag");
+    instanceShader = Shader("instanceShader.vert", "instanceShader.frag");
 
     auto plane = std::make_unique<Shape>();
     glm::mat4 planeLocation = glm::mat4(1.0f);
@@ -88,12 +90,39 @@ inline int Program::init()
 
     tree = Model("asset\\tree\\tree_oak.obj");
 
-    
-    for (int i = 0; i < 100; i++) {
+    int treeAmount = 1000;
+    for (int i = 0; i < treeAmount; i++) {
         glm::mat4 treeLocation = glm::mat4(1.0f);
         glm::vec3 randPoint = plane->randomPoint();
         treeLocation = glm::translate(treeLocation, randPoint);
         treeLocations.push_back(treeLocation);
+    }
+
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, treeLocations.size() * sizeof(glm::mat4), treeLocations.data(), GL_STATIC_DRAW);
+
+    for (unsigned int i = 0; i < tree.meshes.size(); i++)
+    {
+        unsigned int VAO = tree.meshes[i].VAO;
+        glBindVertexArray(VAO);
+        // set attribute pointers for matrix (4 times vec4)
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+        glEnableVertexAttribArray(6);
+        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+        glVertexAttribDivisor(3, 1);
+        glVertexAttribDivisor(4, 1);
+        glVertexAttribDivisor(5, 1);
+        glVertexAttribDivisor(6, 1);
+
+        glBindVertexArray(0);
     }
 
     skybox = Skybox();
@@ -200,9 +229,18 @@ inline void Program::loop()
     // draw main
     world.Draw(shaderProgram);
 
-    for (auto&& treeLoc : treeLocations) {
-        shaderProgram.setValue("model", treeLoc);
-        tree.Draw(shaderProgram);
+    // draw meteorites
+    instanceShader.use();
+
+    instanceShader.setValue("view", view);
+    instanceShader.setValue("projection", projection);
+
+    
+    for (int i = 0; i < tree.meshes.size(); i++) {
+        instanceShader.setValue("material.color_diffuse", tree.meshes[i].getColor());
+        glBindVertexArray(tree.meshes[i].VAO);
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(tree.meshes[i].indices.size()), GL_UNSIGNED_INT, 0, treeLocations.size());
+        glBindVertexArray(0);
     }
     
     SDL_GL_SwapWindow(window);

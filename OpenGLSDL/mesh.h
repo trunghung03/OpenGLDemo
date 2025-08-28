@@ -39,6 +39,7 @@ public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, Color);
 	void Draw(Shader& shader);
+	glm::vec3 getColor();
 	unsigned int VAO, VBO, EBO;
 private:
 	// Render data
@@ -91,6 +92,11 @@ void Mesh::setupMesh()
 	glBindVertexArray(0);
 }
 
+inline glm::vec3 Mesh::getColor()
+{
+	return { this->color.color.r, this->color.color.g, this->color.color.b };
+}
+
 void Mesh::Draw(Shader& shader)
 {
 	unsigned int diffuseNr = 1;
@@ -116,7 +122,7 @@ void Mesh::Draw(Shader& shader)
 
 	if (!color.type.empty()) {
 		std::string name = color.type; // TODO: Generalize this
-		glm::vec3 color = { this->color.color.r, this->color.color.g, this->color.color.b };
+		glm::vec3 color = getColor();
 
 		shader.setValue(("material." + name).c_str(), color);
 	}

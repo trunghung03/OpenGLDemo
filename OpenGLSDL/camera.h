@@ -41,7 +41,7 @@ public:
 
 		Zoom = 45.0f;
 		//MovementSpeed = 0.003f;
-		MovementSpeed = 0.015f;
+		MovementSpeed = 0.005f;
 		Sensitivity = 0.1f;
 
 		updateCameraVector();
